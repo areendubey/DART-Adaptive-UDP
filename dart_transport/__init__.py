@@ -4,12 +4,14 @@ from .adaptive import AdaptiveConfig, AdaptiveDecision, AdaptiveEngine, Adaptive
 from .metrics import MetricsSnapshot, TransferMetrics
 from .packet import Packet, PacketDecodeError, PacketFlag, PacketType
 from .rtt import RtoConfig, RttEstimator
+from .integration import ControllerConfig, ReliabilityController, TransportMode
 
 __all__ = [
     "AdaptiveConfig",
     "AdaptiveDecision",
     "AdaptiveEngine",
     "AdaptiveState",
+    "ControllerConfig",
     "MetricsSnapshot",
     "Packet",
     "PacketDecodeError",
@@ -17,5 +19,7 @@ __all__ = [
     "PacketType",
     "RtoConfig",
     "RttEstimator",
+    "ReliabilityController",
+    "TransportMode",
     "TransferMetrics",
 ]
