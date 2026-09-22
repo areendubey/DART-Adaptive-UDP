@@ -1,0 +1,5 @@
+[project]
+name = "dart-adaptive-udp"
+version = "0.1.0"
+description = "Dynamic Adaptive Reliable Transport foundations"
+requires-python = ">=3.11"
