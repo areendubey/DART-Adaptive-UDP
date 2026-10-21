@@ -217,13 +217,13 @@ class DARTPacket:
         )
 
     @classmethod
-    def create_fin(cls, seq_num: int) -> "DARTPacket":
+    def create_fin(cls, seq_num: int, file_hash: str = "") -> "DARTPacket":
         """Creates a FIN packet signaling end of transmission."""
         return cls(
             seq_num=seq_num,
             ack_num=0,
             flags=FLAG_FIN,
-            payload=b""
+            payload=file_hash.encode("utf-8") if file_hash else b""
         )
 
     @classmethod

@@ -51,6 +51,13 @@ class AdaptiveRTOEstimator:
         effective_rto = self._current_rto * self._backoff_multiplier
         return max(self.min_rto, min(self.max_rto, effective_rto))
 
+    @property
+    def current_rto(self) -> float:
+        return self.rto
+
+    def on_rtt_sample(self, rtt_sample: float, is_retransmission: bool = False):
+        self.update_rtt(rtt_sample, is_retransmission)
+
     def update_rtt(self, rtt_sample: float, is_retransmission: bool = False):
         """
         Processes a newly measured RTT sample.

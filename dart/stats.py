@@ -51,8 +51,31 @@ class TransferStats:
     def mark_start(self):
         self.start_time = time.time()
 
+    def start(self):
+        self.mark_start()
+
     def mark_end(self):
         self.end_time = time.time()
+
+    def finish(self):
+        self.mark_end()
+
+    def record_packet_sent(self, size: int):
+        self.total_data_bytes += size
+        self.total_packets_sent += 1
+
+    def record_retransmission(self):
+        self.total_packets_sent += 1
+        self.total_packets_retransmitted += 1
+
+    def record_ack_received(self):
+        self.total_acks_received += 1
+
+    def record_timeout(self):
+        self.total_timeouts += 1
+
+    def record_rtt_sample(self, rtt: float):
+        self.rtt_samples.append(rtt)
 
     @property
     def elapsed_time(self) -> float:
