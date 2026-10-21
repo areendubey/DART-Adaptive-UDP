@@ -1,0 +1,495 @@
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
+This is a comprehensive test document for DART Reliable UDP Transport.
+CS-30003 Coding Assignment 1 - Project Proposal - Section CSE 34
+Team:
+  - Areen Dubey (24051689)
+  - Anushka Roy (24051912)
+  - Savvy Jatrana (24051046)
+  - Kartikey Singh (24051713)
+
+Kartikey Singh Primary Ownership Deliverables:
+1. Stop-and-Wait ARQ Protocol (Chunking, ACKs, Jacobson/Karels RTO, Karn's Algorithm)
+2. Network Channel Emulator (Loss, Delay, Jitter, Corruption, Duplication, Reordering, Deterministic Seed)
+3. Experiment Automation, Logging, and Performance Benchmarking
+
+This data will be transferred across an emulated lossy UDP channel and verified using SHA-256 cryptographic hashing!
+=== REPEAT DATA BLOCK FOR SUFFICIENT FILE SIZE ===
+
