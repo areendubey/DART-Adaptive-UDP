@@ -1,531 +1,368 @@
 """
-selective_repeat.py  --  DART / CS-30003 / CSE 34  (Owner: Savvy Jatrana)
+DART Selective Repeat (SR) ARQ Protocol Implementation
+Integration & Architecture: Savvy Jatrana & Areen Dubey
+Catalogue Foundation: P3 Reliable Data Transfer over UDP
 
-Selective Repeat ARQ over UDP, built on the team's shared modules:
-    config.Config   -> payload_size, window_size, min_window, max_window,
-                       initial_rto, min_rto, max_rto, max_retries, linger, idle_timeout
-    config.Stats    -> filled exactly as documented in config.py (SRStats subclasses it
-                       and only ADDS fields, so stats.to_row() is identical to the
-                       other ARQs; stats.extended_row() adds SR-specific extras)
-    rto.RTOEstimator-> current() / on_rtt_sample(rtt) / on_timeout()
-
-Public API (used by cli.py and dev_channel.py)
-    SRSender(sock, peer, cfg=None, rto=None, controller=None, dupthresh=<cfg or 3>)
-        .send_file(path) / .send_bytes(data) / .send_stream(fobj) -> SRStats
-        .window_size   read/write at any time (clamped to [cfg.min_window, cfg.max_window])
-                       -> this is the DART adaptive-engine hook
-        .stats
-    SRReceiver(sock, cfg=None)
-        .receive_file(path) / .receive_stream(fobj) -> SRStats
-        .stats
-
-Socket contract: only sendto / recvfrom / settimeout are used, so a real UDP socket or any
-emulator wrapper (FaultySocket, Kartikey's emulator, ...) plugs in unchanged.
-
-Mechanics
-  * per-packet timers in a min-heap (lazy invalidation)            -> O(log W) per event
-  * cumulative ACK + echo ACK + 64-bit SACK bitmap (any window size works: echo ACKs
-    cover packets beyond the bitmap)
-  * optional SACK fast retransmit (dupthresh; None/0 disables)
-  * Karn's rule: RTT samples only from never-retransmitted packets
-  * rto.on_timeout() called once per timeout EVENT (not per packet) -> no exponential blow-up
-  * receiver buffers out-of-order data (up to cfg.max_window), streams in-order to disk
-  * SHA-256 of the file travels in FIN; FINACK reports match/mismatch (stats.verified)
-
-Sequence numbers are packet indices (32-bit).
+Features:
+  - Individual per-packet retransmission timers (Selective Repeat)
+  - Selective Acknowledgements (ACKing individual packets)
+  - Receiver out-of-order buffering and in-order stream assembly
+  - Jacobson/Karels dynamic RTO estimation with Karn's rule
+  - Pluggable DART Adaptive Engine for dynamic window adaptation
+  - Cryptographic SHA-256 source/received file integrity verification
 """
-from __future__ import annotations
 
-import hashlib
-import heapq
-import io
 import socket
-import struct
 import time
-import zlib
-from dataclasses import dataclass
-from typing import NamedTuple, Optional
+import os
+import json
+import hashlib
+from typing import Optional, Callable, Dict, Any, List, Set
 
-from config import Config, Stats
-from rto import JacobsonKarelsRTO, RTOEstimator
-
-# --------------------------------------------------------------------------
-# Packet format
-# --------------------------------------------------------------------------
-DATA, ACK, FIN, FINACK = 1, 2, 3, 4
-_VALID_TYPES = (DATA, ACK, FIN, FINACK)
-
-# type, flags, seq, cum_ack, echo, sack_bitmap, payload_len, crc32
-_HDR = struct.Struct("!BBIIIQHI")
-HDR_LEN = _HDR.size                      # 28 bytes
-SACK_BITS = 64
-MAX_PAYLOAD = 65507 - HDR_LEN
-_CRC = struct.Struct("!I")
+from dart.packet import (
+    DARTPacket,
+    MAX_PAYLOAD_SIZE,
+    FLAG_SYN,
+    FLAG_ACK,
+    FLAG_DATA,
+    FLAG_FIN
+)
+from dart.timer import AdaptiveRTOEstimator
+from dart.stats import TransferStats
+from dart.arq.base import BaseARQSender, BaseARQReceiver
+from dart.adaptive.engine import BaseAdaptiveEngine, FixedBaselineEngine
 
 
-class Packet(NamedTuple):
-    type: int
-    seq: int
-    ack: int
-    echo: int
-    sack: int
-    payload: bytes
+class SelectiveRepeatSender(BaseARQSender):
+    """
+    Selective Repeat ARQ Sender with Individual Packet Timers and Adaptive Windowing.
+    """
 
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        window_size: int = 5,
+        packet_size: int = MAX_PAYLOAD_SIZE,
+        initial_rto: float = 0.5,
+        min_rto: float = 0.05,
+        max_rto: float = 5.0,
+        max_retransmissions: int = 25,
+        adaptive_engine: Optional[BaseAdaptiveEngine] = None
+    ):
+        super().__init__(host, port, packet_size)
+        self.initial_window = max(1, window_size)
+        self.adaptive_engine = adaptive_engine or FixedBaselineEngine(fixed_window=self.initial_window)
+        self.max_retransmissions = max_retransmissions
+        self.rto_estimator = AdaptiveRTOEstimator(
+            initial_rto=initial_rto,
+            min_rto=min_rto,
+            max_rto=max_rto
+        )
+        self.sock: Optional[socket.socket] = None
 
-def pack(ptype: int, seq: int = 0, ack: int = 0, echo: int = 0,
-         sack: int = 0, payload: bytes = b"") -> bytes:
-    """Serialise a packet; CRC32 covers header (crc field zeroed) + payload."""
-    hdr = _HDR.pack(ptype, 0, seq, ack, echo, sack, len(payload), 0)
-    crc = zlib.crc32(payload, zlib.crc32(hdr)) & 0xFFFFFFFF
-    return hdr[:-4] + _CRC.pack(crc) + payload
+    def _init_socket(self):
+        if self.sock is not None:
+            try:
+                self.sock.close()
+            except Exception:
+                pass
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.settimeout(0.01)
 
+    def send_file(
+        self,
+        file_path: str,
+        progress_callback: Optional[Callable[[int, int], None]] = None
+    ) -> TransferStats:
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Source file not found: {file_path}")
 
-def unpack(data: bytes) -> Optional[Packet]:
-    """Parse + verify. Returns None for corrupt/truncated/foreign datagrams."""
-    if len(data) < HDR_LEN:
-        return None
-    ptype, _flags, seq, ack, echo, sack, length, crc = _HDR.unpack_from(data)
-    if ptype not in _VALID_TYPES or len(data) != HDR_LEN + length:
-        return None
-    payload = data[HDR_LEN:]
-    calc = zlib.crc32(payload, zlib.crc32(data[:HDR_LEN - 4] + b"\0\0\0\0"))
-    if calc & 0xFFFFFFFF != crc:
-        return None
-    return Packet(ptype, seq, ack, echo, sack, payload)
+        with open(file_path, "rb") as f:
+            data = f.read()
 
+        return self.send_bytes(
+            data=data,
+            progress_callback=progress_callback,
+            filename=os.path.basename(file_path)
+        )
 
-class TransferError(Exception):
-    pass
+    def send_bytes(
+        self,
+        data: bytes,
+        progress_callback: Optional[Callable[[int, int], None]] = None,
+        filename: str = "payload.bin"
+    ) -> TransferStats:
+        self._init_socket()
+        self.stats = TransferStats()
+        self.stats.start()
 
+        chunks: List[bytes] = []
+        offset = 0
+        while offset < len(data):
+            chunks.append(data[offset : offset + self.packet_size])
+            offset += self.packet_size
 
-# --------------------------------------------------------------------------
-# Stats: the team's Stats + a few SR-only extras (to_row() stays identical)
-# --------------------------------------------------------------------------
-@dataclass
-class SRStats(Stats):
-    fast_retransmits: int = 0     # sender: SACK-triggered early retransmissions
-    max_inflight: int = 0         # sender: peak (next_seq - base); never exceeds window
-    fin_confirmed: bool = False   # sender: FINACK received
-    verified: bool = False        # SHA-256 matched (sender: via FINACK, receiver: local check)
-    out_of_window: int = 0        # receiver: dropped, beyond the receive window
-    max_buffered: int = 0         # receiver: peak out-of-order buffer occupancy
-    acks_sent: int = 0            # receiver
+        if not chunks:
+            chunks.append(b"")
 
-    def extended_row(self) -> dict:
-        row = self.to_row()
-        row.update(fast_retransmits=self.fast_retransmits, max_inflight=self.max_inflight,
-                   verified=self.verified, duplicates=self.duplicates,
-                   corrupt=self.corrupt, out_of_order=self.out_of_order,
-                   out_of_window=self.out_of_window, max_buffered=self.max_buffered)
-        return row
+        total_chunks = len(chunks)
+        sha256_hash = hashlib.sha256(data).hexdigest()
 
+        # Phase 1: Connection Handshake
+        if not self._handshake_syn(filename, len(data), total_chunks, sha256_hash):
+            raise ConnectionError("SR handshake failed: Receiver did not respond with SYN-ACK")
 
-def _tune_socket(sock, bufsize: int = 4 << 20) -> None:
-    """Bigger kernel buffers on a real socket; silently skipped for wrappers."""
-    for opt in (socket.SO_RCVBUF, socket.SO_SNDBUF):
+        # Phase 2: Selective Repeat Data Transmission
+        send_base = 0
+        next_seq = 0
+        acked_packets: Set[int] = set()
+        send_times: Dict[int, float] = {}
+        timer_starts: Dict[int, float] = {}
+        retransmission_counts: Dict[int, int] = {}
+        retransmitted_seqs: Set[int] = set()
+
+        while send_base < total_chunks:
+            current_window = self.adaptive_engine.get_transmission_window()
+            pacing_ms = self.adaptive_engine.get_pacing_interval_ms()
+
+            # Transmit while within window
+            while next_seq < total_chunks and (next_seq - send_base) < current_window:
+                pkt = DARTPacket.create_data(
+                    seq_num=next_seq,
+                    data=chunks[next_seq],
+                    window_size=current_window
+                )
+                self.sock.sendto(pkt.pack(), (self.host, self.port))
+                now = time.perf_counter()
+                send_times[next_seq] = now
+                timer_starts[next_seq] = now
+                retransmission_counts[next_seq] = 0
+                self.stats.record_packet_sent(len(chunks[next_seq]))
+
+                next_seq += 1
+                if pacing_ms > 0:
+                    time.sleep(pacing_ms / 1000.0)
+
+            # Receive ACKs (Non-blocking with short timeout)
+            try:
+                raw_ack, _ = self.sock.recvfrom(2048)
+                ack_pkt = DARTPacket.unpack(raw_ack)
+
+                if ack_pkt.is_ack:
+                    acked_seq = ack_pkt.ack_num
+                    now = time.perf_counter()
+
+                    if acked_seq not in acked_packets and acked_seq < total_chunks:
+                        acked_packets.add(acked_seq)
+                        self.stats.record_ack_received()
+
+                        # Stop individual packet timer
+                        if acked_seq in timer_starts:
+                            del timer_starts[acked_seq]
+
+                        # Sample RTT only if packet was never retransmitted (Karn's algorithm)
+                        if acked_seq in send_times and acked_seq not in retransmitted_seqs:
+                            sample_rtt = now - send_times[acked_seq]
+                            self.rto_estimator.on_rtt_sample(sample_rtt)
+                            self.adaptive_engine.on_rtt_sample(sample_rtt)
+                            self.stats.record_rtt_sample(sample_rtt)
+
+                        # Slide window base forward past contiguous acknowledged packets
+                        while send_base in acked_packets:
+                            send_base += 1
+
+                        if progress_callback:
+                            progress_callback(min(send_base * self.packet_size, len(data)), len(data))
+
+            except (socket.timeout, ValueError):
+                pass
+
+            # Per-Packet Timer Expiry Checks
+            now = time.perf_counter()
+            current_rto = self.rto_estimator.current_rto
+
+            for seq in range(send_base, min(next_seq, send_base + current_window)):
+                if seq not in acked_packets and seq in timer_starts:
+                    if (now - timer_starts[seq]) > current_rto:
+                        # Selective Timeout: Retransmit ONLY this specific timed-out packet!
+                        self.stats.record_timeout()
+                        self.rto_estimator.on_timeout()
+                        self.adaptive_engine.on_loss_event()
+
+                        retransmission_counts[seq] = retransmission_counts.get(seq, 0) + 1
+                        if retransmission_counts[seq] > self.max_retransmissions:
+                            raise ConnectionResetError(f"SR transfer aborted: packet {seq} exceeded {self.max_retransmissions} retries")
+
+                        re_pkt = DARTPacket.create_data(
+                            seq_num=seq,
+                            data=chunks[seq],
+                            window_size=current_window
+                        )
+                        self.sock.sendto(re_pkt.pack(), (self.host, self.port))
+                        timer_starts[seq] = now
+                        retransmitted_seqs.add(seq)
+                        self.stats.record_retransmission()
+
+        # Phase 3: Teardown
+        self._teardown_fin(total_chunks, sha256_hash)
+        self.stats.finish()
+
         try:
-            sock.setsockopt(socket.SOL_SOCKET, opt, bufsize)
-        except (AttributeError, OSError):
+            self.sock.close()
+        except Exception:
             pass
 
-
-def make_udp_socket(bind=None, bufsize: int = 4 << 20) -> socket.socket:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    _tune_socket(s, bufsize)
-    if bind is not None:
-        s.bind(bind)
-    return s
-
-
-# --------------------------------------------------------------------------
-# Sender
-# --------------------------------------------------------------------------
-class _Slot:
-    __slots__ = ("seq", "wire", "length", "sent_at", "deadline", "retries", "acked", "skips")
-
-    def __init__(self, seq: int, wire: bytes, length: int):
-        self.seq = seq
-        self.wire = wire            # pre-serialised: retransmit costs no re-pack
-        self.length = length
-        self.sent_at = 0.0
-        self.deadline = 0.0
-        self.retries = 0
-        self.acked = False
-        self.skips = 0
-
-
-_UNSET = object()
-
-
-class SRSender:
-    """controller (optional): on_ack(sender, rtt_sample_or_None) and
-    on_loss(sender, kind in {"timeout","fast"}); it may set sender.window_size."""
-
-    def __init__(self, sock, peer, cfg: Optional[Config] = None,
-                 rto: Optional[RTOEstimator] = None, controller=None,
-                 dupthresh=_UNSET, max_fin_retries: int = 8):
-        self.cfg = cfg = cfg or Config()
-        if not 0 < cfg.payload_size <= MAX_PAYLOAD:
-            raise ValueError("cfg.payload_size out of range")
-        self.sock, self.peer, self.mss = sock, peer, cfg.payload_size
-        self.rto = rto if rto is not None else JacobsonKarelsRTO(
-            cfg.initial_rto, cfg.min_rto, cfg.max_rto)
-        self.controller = controller
-        self.max_retries = cfg.max_retries
-        self.max_fin_retries = max_fin_retries
-        # Config has no dupthresh field; add one there to tune it from experiments.
-        self.dupthresh = getattr(cfg, "dupthresh", 3) if dupthresh is _UNSET else dupthresh
-        _tune_socket(sock)
-        self.stats = SRStats()
-        self._window = cfg.min_window
-        self.window_size = cfg.window_size
-
-    # -- adjustable window (DART hook) ---------------------------------------
-    @property
-    def window_size(self) -> int:
-        return self._window
-
-    @window_size.setter
-    def window_size(self, w) -> None:
-        w = min(max(int(w), self.cfg.min_window), self.cfg.max_window)
-        if w != self._window or not self.stats.window_trace:
-            self._window = w
-            self._trace()
-
-    window = window_size                     # alias
-
-    def _trace(self) -> None:
-        st = self.stats
-        t = (time.monotonic() - st.t_start) if st.t_start else 0.0
-        st.window_trace.append((t, self._window))
-
-    # -- public API ------------------------------------------------------------
-    def send_file(self, path: str) -> SRStats:
-        with open(path, "rb") as f:
-            return self.send_stream(f)
-
-    def send_bytes(self, data: bytes) -> SRStats:
-        return self.send_stream(io.BytesIO(data))
-
-    def _init_state(self) -> None:
-        self.stats = SRStats()
-        self.stats.start()
-        self._trace()                         # window at t = 0
-        self._inflight: dict[int, _Slot] = {}
-        self._heap: list = []
-        self._base = self._nxt = 0
-        self._hasher = hashlib.sha256()
-        self._finack: Optional[bytes] = None
-
-    def send_stream(self, fobj) -> SRStats:
-        self._init_state()
-        try:
-            self._data_phase(fobj)
-            self._fin_phase()
-        finally:
-            self.stats.stop()
         return self.stats
 
-    # -- internals -------------------------------------------------------------
-    def _valid(self, entry) -> bool:
-        slot = self._inflight.get(entry[1])
-        return slot is not None and not slot.acked and slot.deadline == entry[0]
+    def _handshake_syn(self, filename: str, size: int, chunks: int, sha256_hash: str) -> bool:
+        meta = {"filename": filename, "size": size, "chunks": chunks, "sha256": sha256_hash}
+        syn_pkt = DARTPacket.create_syn(seq_num=0, metadata=meta)
+        packed = syn_pkt.pack()
 
-    def _send(self, wire: bytes) -> None:
-        try:
-            self.sock.sendto(wire, self.peer)
-        except (BlockingIOError, InterruptedError, ConnectionError):
-            pass                              # treated as loss; the timer recovers
-
-    def _transmit(self, slot: _Slot, now: float) -> None:
-        self._send(slot.wire)
-        slot.sent_at = now
-        slot.deadline = now + self.rto.current()
-        heapq.heappush(self._heap, (slot.deadline, slot.seq))
-        self.stats.packets_sent += 1
-
-    def _retransmit(self, slot: _Slot, now: float, kind: str) -> None:
-        slot.retries += 1
-        if slot.retries > self.max_retries:
-            raise TransferError(f"packet {slot.seq}: gave up after {self.max_retries} retransmissions")
-        slot.skips = 0
-        self.stats.retransmissions += 1
-        if kind == "fast":
-            self.stats.fast_retransmits += 1
-        self._transmit(slot, now)
-        if kind == "fast" and self.controller:
-            self.controller.on_loss(self, "fast")
-
-    def _wait(self, timeout: float) -> None:
-        """Block up to `timeout` for a datagram, then drain what else is queued.
-        Only settimeout/recvfrom are used, so any socket wrapper works."""
-        sock, st = self.sock, self.stats
-        sock.settimeout(max(timeout, 1e-4))   # 0 would mean non-blocking
-        while True:
+        for _ in range(15):
+            self.sock.sendto(packed, (self.host, self.port))
             try:
-                data, _addr = sock.recvfrom(2048)
-            except (socket.timeout, BlockingIOError, InterruptedError):
-                return
-            except ConnectionError:           # ICMP unreachable on some OSes
+                self.sock.settimeout(0.3)
+                raw, _ = self.sock.recvfrom(2048)
+                resp = DARTPacket.unpack(raw)
+                if resp.is_syn and resp.is_ack:
+                    self.sock.settimeout(0.01)
+                    return True
+            except (socket.timeout, ValueError):
                 continue
-            sock.settimeout(0)                # drain the rest without blocking
-            pkt = unpack(data)
-            if pkt is None:
-                st.corrupt += 1
-            elif pkt.type == ACK:
-                self._on_ack(pkt, time.monotonic())
-            elif pkt.type == FINACK:
-                self._finack = pkt.payload
+        return False
 
-    def _data_phase(self, fobj) -> None:
-        st, inflight, heap, read = self.stats, self._inflight, self._heap, fobj.read
-        eof = False
-        while True:
-            now = time.monotonic()
-            while not eof and self._nxt - self._base < self._window:   # fill window
-                chunk = read(self.mss)
-                if not chunk:
-                    eof = True
+    def _teardown_fin(self, total_chunks: int, sha256_hash: str):
+        fin_pkt = DARTPacket.create_fin(seq_num=total_chunks, file_hash=sha256_hash)
+        packed = fin_pkt.pack()
+
+        for _ in range(10):
+            self.sock.sendto(packed, (self.host, self.port))
+            try:
+                self.sock.settimeout(0.2)
+                raw, _ = self.sock.recvfrom(2048)
+                resp = DARTPacket.unpack(raw)
+                if resp.is_fin and resp.is_ack:
                     break
-                self._hasher.update(chunk)
-                slot = _Slot(self._nxt, pack(DATA, seq=self._nxt, payload=chunk), len(chunk))
-                inflight[slot.seq] = slot
-                self._transmit(slot, now)
-                self._nxt += 1
-                out = self._nxt - self._base
-                if out > st.max_inflight:
-                    st.max_inflight = out
-            if eof and not inflight:
-                return
-            while heap and not self._valid(heap[0]):
-                heapq.heappop(heap)
-            timeout = max(0.0, heap[0][0] - now) if heap else 0.05
-            self._wait(timeout)
-            self._expire(time.monotonic())
-
-    def _mark(self, slot: _Slot) -> None:
-        slot.acked = True
-        self.stats.bytes_delivered += slot.length
-
-    def _on_ack(self, pkt: Packet, now: float) -> None:
-        st, inflight = self.stats, self._inflight
-        top, sample = -1, None
-
-        # 1) echo ACK -- the only source of RTT samples (Karn)
-        slot = inflight.get(pkt.echo)
-        if slot is not None and not slot.acked:
-            self._mark(slot)
-            top = slot.seq
-            if slot.retries == 0:
-                sample = now - slot.sent_at
-
-        # 2) cumulative ACK
-        for s in range(self._base, min(pkt.ack, self._nxt)):
-            slot = inflight.get(s)
-            if slot is not None and not slot.acked:
-                self._mark(slot)
-                if s > top:
-                    top = s
-
-        # 3) SACK bitmap: bit i <=> seq (ack + 1 + i) received
-        bm, s = pkt.sack, pkt.ack + 1
-        while bm:
-            if bm & 1:
-                slot = inflight.get(s)
-                if slot is not None and not slot.acked:
-                    self._mark(slot)
-                    if s > top:
-                        top = s
-            bm >>= 1
-            s += 1
-
-        base = self._base                     # slide window
-        while True:
-            slot = inflight.get(base)
-            if slot is None or not slot.acked:
-                break
-            del inflight[base]
-            base += 1
-        self._base = base
-
-        if top < 0:
-            return                            # duplicate ACK: nothing new
-        st.acks_received += 1                 # "valid, new ACKs"
-        if sample is not None:
-            self.rto.on_rtt_sample(sample)
-            st.rtt_samples.append(sample)
-
-        # SACK fast retransmit: a hole skipped by `dupthresh` newer acked packets
-        if self.dupthresh and top > base:
-            for s in range(base, top):
-                slot = inflight.get(s)
-                if slot is not None and not slot.acked:
-                    slot.skips += 1
-                    if slot.skips == self.dupthresh:
-                        self._retransmit(slot, now, "fast")
-
-        if self.controller:
-            self.controller.on_ack(self, sample)
-
-    def _expire(self, now: float) -> None:
-        heap = self._heap
-        expired = []
-        while heap and heap[0][0] <= now:
-            entry = heapq.heappop(heap)
-            if self._valid(entry):
-                expired.append(self._inflight[entry[1]])
-        if not expired:
-            return
-        self.stats.timeouts += len(expired)   # SR: one timer expiry per retransmission
-        self.rto.on_timeout()                 # once per event, not per packet
-        for slot in expired:
-            self._retransmit(slot, now, "timeout")
-        if self.controller:
-            self.controller.on_loss(self, "timeout")
-
-    def _fin_phase(self) -> None:
-        fin = pack(FIN, seq=self._nxt, payload=self._hasher.digest())
-        # All data is already acked, so FIN is best-effort.  Retry often enough that several
-        # attempts fit inside the receiver's linger window, and keep the FIN phase out of the
-        # data-path RTO estimator (no on_timeout() here).
-        interval = max(0.01, min(self.rto.current(), self.cfg.linger / 4))
-        for _ in range(self.max_fin_retries + 1):
-            self._send(fin)
-            end = time.monotonic() + interval
-            while self._finack is None:
-                remaining = end - time.monotonic()
-                if remaining <= 0:
-                    break
-                self._wait(remaining)
-            if self._finack is not None:
-                break
-        self.stats.fin_confirmed = self._finack is not None
-        self.stats.verified = self._finack == b"\x01"
+            except (socket.timeout, ValueError):
+                continue
 
 
-# --------------------------------------------------------------------------
-# Receiver
-# --------------------------------------------------------------------------
-class SRReceiver:
-    def __init__(self, sock, cfg: Optional[Config] = None):
-        self.cfg = cfg = cfg or Config()
-        self.sock = sock
-        self.window = cfg.max_window          # buffers up to max_window packets
-        self.idle_timeout = cfg.idle_timeout
-        self.linger = cfg.linger              # keep re-ACKing a retransmitted FIN
-        _tune_socket(sock)
-        self._reset(None)
+class SelectiveRepeatReceiver(BaseARQReceiver):
+    """
+    Selective Repeat ARQ Receiver with Out-of-Order Buffering and In-Order Delivery.
+    """
 
-    def receive_file(self, path: str) -> SRStats:
-        with open(path, "wb") as f:
-            return self.receive_stream(f)
+    def __init__(self, listen_host: str = "0.0.0.0", listen_port: int = 9000, window_size: int = 16):
+        super().__init__(listen_host, listen_port)
+        self.window_size = window_size
+        self.sock: Optional[socket.socket] = None
 
-    def _reset(self, fobj) -> None:
-        self._out = fobj
-        self.base = 0
-        self.buf: dict[int, bytes] = {}
-        self.hasher = hashlib.sha256()
-        self.stats = SRStats()
-        self.peer = None
+    def receive_file(
+        self,
+        output_path: str,
+        timeout_seconds: Optional[float] = 30.0
+    ) -> TransferStats:
+        data = self.receive_bytes(timeout_seconds=timeout_seconds)
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        with open(output_path, "wb") as f:
+            f.write(data)
+        return self.stats
 
-    def receive_stream(self, fobj) -> SRStats:
-        self._reset(fobj)
-        sock, st = self.sock, self.stats
-        fin_done_at = None
+    def receive_bytes(self, timeout_seconds: Optional[float] = 30.0) -> bytes:
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((self.listen_host, self.listen_port))
+        self.sock.settimeout(timeout_seconds)
+        self.stats = TransferStats()
+        self.stats.start()
+
+        rcv_base = 0
+        received_buffer: Dict[int, bytes] = {}
+        sender_addr = None
+        expected_sha256 = ""
+        total_chunks_expected: Optional[int] = None
+
         try:
             while True:
-                if fin_done_at is None:
-                    sock.settimeout(self.idle_timeout)
-                else:
-                    remaining = fin_done_at - time.monotonic()
-                    if remaining <= 0:
-                        break
-                    sock.settimeout(remaining)
                 try:
-                    data, addr = sock.recvfrom(65535)
-                except socket.timeout:
-                    if fin_done_at is not None:
-                        break
-                    raise TransferError("receiver idle timeout")
-                except ConnectionError:
+                    raw_data, addr = self.sock.recvfrom(4096)
+                    sender_addr = addr
+                    pkt = DARTPacket.unpack(raw_data)
+                except (socket.timeout, ValueError):
                     continue
-                pkt = unpack(data)
-                if pkt is None:
-                    st.corrupt += 1
+
+                # Handle SYN
+                if pkt.is_syn:
+                    try:
+                        meta = json.loads(pkt.payload.decode("utf-8"))
+                        expected_sha256 = meta.get("sha256", "")
+                        total_chunks_expected = meta.get("chunks", None)
+                    except Exception:
+                        pass
+                    syn_ack = DARTPacket(
+                        magic=0xDA87,
+                        version=1,
+                        flags=FLAG_SYN | FLAG_ACK,
+                        seq_num=0,
+                        ack_num=0,
+                        window_size=self.window_size,
+                        checksum=0,
+                        payload=b""
+                    )
+                    self.sock.sendto(syn_ack.pack(), sender_addr)
                     continue
-                if self.peer is None:
-                    self.peer = addr
-                    st.start()                # clock starts at the first valid packet
-                elif addr != self.peer:
+
+                # Handle DATA
+                if pkt.is_data:
+                    seq = pkt.seq_num
+
+                    # Send Selective ACK for the received packet
+                    ack_pkt = DARTPacket.create_ack(ack_num=seq)
+                    self.sock.sendto(ack_pkt.pack(), sender_addr)
+                    self.stats.record_ack_received()
+
+                    # Accept within receive window [rcv_base, rcv_base + window_size - 1]
+                    if rcv_base <= seq < (rcv_base + self.window_size * 2):
+                        if seq not in received_buffer:
+                            received_buffer[seq] = pkt.payload
+                            self.stats.record_packet_sent(len(pkt.payload))
+
+                        # Advance rcv_base past consecutively received chunks
+                        while rcv_base in received_buffer:
+                            rcv_base += 1
                     continue
-                if pkt.type == DATA:
-                    self._on_data(pkt)
-                elif pkt.type == FIN:
-                    if self._on_fin(pkt):
-                        if fin_done_at is None:
-                            st.stop()         # completion time excludes the linger
-                        # every FIN (re)transmission extends the linger, so a sender that is
-                        # still retrying after a lost FINACK always finds us listening
-                        fin_done_at = time.monotonic() + self.linger
+
+                # Handle FIN
+                if pkt.is_fin:
+                    fin_ack = DARTPacket(
+                        magic=0xDA87,
+                        version=1,
+                        flags=FLAG_FIN | FLAG_ACK,
+                        seq_num=pkt.seq_num,
+                        ack_num=pkt.seq_num,
+                        window_size=1,
+                        checksum=0,
+                        payload=b""
+                    )
+                    for _ in range(3):
+                        self.sock.sendto(fin_ack.pack(), sender_addr)
+                    break
+
         finally:
-            if not st.t_start:
-                st.start()
-            if not st.t_end:
-                st.stop()
-            if fobj is not None:
-                fobj.flush()
-        return st
+            self.stats.finish()
+            try:
+                self.sock.close()
+            except Exception:
+                pass
 
-    def _deliver(self, payload: bytes) -> None:
-        self._out.write(payload)
-        self.hasher.update(payload)
-        self.stats.bytes_delivered += len(payload)
+        # Reassemble payload in strict order
+        assembled = bytearray()
+        for seq in sorted(received_buffer.keys()):
+            assembled.extend(received_buffer[seq])
 
-    def _on_data(self, pkt: Packet) -> None:
-        seq, st, buf = pkt.seq, self.stats, self.buf
-        if seq < self.base or seq in buf:
-            st.duplicates += 1
-        elif seq >= self.base + self.window:
-            st.out_of_window += 1
-        elif seq == self.base:
-            self._deliver(pkt.payload)
-            self.base += 1
-            while self.base in buf:
-                self._deliver(buf.pop(self.base))
-                self.base += 1
-        else:
-            buf[seq] = pkt.payload
-            st.out_of_order += 1
-            if len(buf) > st.max_buffered:
-                st.max_buffered = len(buf)
-        self._send_ack(seq)
+        actual_sha256 = hashlib.sha256(assembled).hexdigest()
+        if expected_sha256 and expected_sha256 != actual_sha256:
+            raise ValueError(f"Selective Repeat integrity check failed: expected {expected_sha256}, got {actual_sha256}")
 
-    def _send_ack(self, echo: int) -> None:
-        base, buf, bm = self.base, self.buf, 0
-        if len(buf) < SACK_BITS:              # cheaper of the two scans
-            for s in buf:
-                d = s - base - 1
-                if 0 <= d < SACK_BITS:
-                    bm |= 1 << d
-        else:
-            for d in range(SACK_BITS):
-                if base + 1 + d in buf:
-                    bm |= 1 << d
-        try:
-            self.sock.sendto(pack(ACK, ack=base, echo=echo, sack=bm), self.peer)
-            self.stats.acks_sent += 1
-        except (BlockingIOError, InterruptedError, ConnectionError):
-            pass
-
-    def _on_fin(self, pkt: Packet) -> bool:
-        if pkt.seq != self.base:              # data still missing
-            self._send_ack(pkt.seq)
-            return False
-        ok = pkt.payload == self.hasher.digest()
-        self.stats.verified = ok
-        try:
-            self.sock.sendto(
-                pack(FINACK, seq=pkt.seq, payload=b"\x01" if ok else b"\x00"), self.peer)
-        except (BlockingIOError, InterruptedError, ConnectionError):
-            pass
-        return True
+        return bytes(assembled)
