@@ -232,12 +232,12 @@ class DARTDashboardHandler(BaseHTTPRequestHandler):
                     os.remove(pth)
 
 
-def run_server(port: int = 8080):
-    server_address = ("127.0.0.1", port)
+def run_server(host: str = "127.0.0.1", port: int = 8080):
+    server_address = (host, port)
     httpd = HTTPServer(server_address, DARTDashboardHandler)
     print("=" * 65)
     print(f"[*] DART Interactive Web Dashboard Server is Live!")
-    print(f"[*] Local URL: http://127.0.0.1:{port}")
+    print(f"[*] Local URL: http://{host}:{port}")
     print(f"    Architecture: Sockets-Only UDP Transport | P3 + Adaptive Engine")
     print("=" * 65)
     try:
@@ -249,4 +249,5 @@ def run_server(port: int = 8080):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-    run_server(port)
+    run_server(port=port)
+

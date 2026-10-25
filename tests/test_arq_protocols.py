@@ -78,6 +78,12 @@ class TestDARTPluggableARQs(unittest.TestCase):
             if os.path.exists(dst_path):
                 os.remove(dst_path)
 
+    def test_stop_and_wait_clean_channel(self):
+        data = b"Testing Stop-and-Wait ARQ over clean UDP channel. " * 20
+        config = EmulatorConfig(seed=12)
+        success = self._run_protocol_transfer(ARQType.STOP_AND_WAIT, data, config)
+        self.assertTrue(success, "Stop-and-Wait clean channel transfer failed")
+
     def test_gbn_clean_channel(self):
         data = b"Testing Go-Back-N reliable transmission over clean UDP channel. " * 30
         config = EmulatorConfig(seed=42)
