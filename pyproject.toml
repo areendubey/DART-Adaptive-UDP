@@ -1,0 +1,23 @@
+[project]
+name = "dart-adaptive-udp"
+version = "1.0.0"
+description = "DART: Dynamic Adaptive Reliable Transport — Reliable UDP with pluggable ARQs and adaptive congestion engine"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "Areen Dubey", email = "areendubey0704@gmail.com" },
+  { name = "Anushka Roy", email = "anushkaroy206@gmail.com" },
+  { name = "Savvy Jatrana", email = "savvajatrana2006@gmail.com" },
+  { name = "Kartikey Singh", email = "kartikeys1205@gmail.com" },
+]
+keywords = ["udp", "reliable-transport", "arq", "networking", "protocol"]
+
+[project.optional-dependencies]
+experiments = ["matplotlib>=3.7", "numpy>=1.24"]
+
+[project.scripts]
+dart = "dart.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"

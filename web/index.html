@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DART · Dynamic Adaptive Reliable Transport · UDP Laboratory</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dark-theme">
+    <!-- Background dynamic glow mesh -->
+    <div class="mesh-bg"></div>
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="logo-orb">
+                <span class="logo-letter">D</span>
+                <div class="orb-pulse"></div>
+            </div>
+            <div class="brand-text">
+                <h1 class="brand-title">DART <span class="badge-tag">P3 + ADAPTIVE</span></h1>
+                <p class="brand-sub">Dynamic Adaptive Reliable Transport · UDP Socket Laboratory</p>
+            </div>
+        </div>
+
+        <div class="header-status-rack">
+            <div class="status-pill active" id="kernelStatus">
+                <span class="status-dot green"></span>
+                <span class="pill-label">Kernel: Raw UDP Sockets</span>
+            </div>
+            <div class="status-pill" id="arqPill">
+                <span class="pill-label">ARQ:</span>
+                <span class="pill-val" id="activeArqLabel">Selective Repeat</span>
+            </div>
+            <div class="status-pill highlight" id="modePill">
+                <span class="pill-label">Mode:</span>
+                <span class="pill-val" id="activeModeLabel">DART Adaptive</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="dashboard-grid">
+        <!-- Column 1: Control Deck -->
+        <section class="panel control-panel" id="controlPanel">
+            <div class="panel-header">
+                <div class="panel-icon">⚙️</div>
+                <div>
+                    <h2 class="panel-title">Protocol & Channel Deck</h2>
+                    <p class="panel-desc">Configure transport and channel emulator</p>
+                </div>
+            </div>
+
+            <!-- ARQ Protocol Selector -->
+            <div class="control-group">
+                <label class="control-label">ARQ Protocol Architecture</label>
+                <div class="segmented-control" id="arqSelector">
+                    <button class="seg-btn" data-arq="stop_and_wait" id="btnSaw">
+                        <span class="seg-title">Stop-and-Wait</span>
+                        <span class="seg-sub">Window N=1</span>
+                    </button>
+                    <button class="seg-btn" data-arq="go_back_n" id="btnGbn">
+                        <span class="seg-title">Go-Back-N</span>
+                        <span class="seg-sub">Cumulative ACK</span>
+                    </button>
+                    <button class="seg-btn active" data-arq="selective_repeat" id="btnSr">
+                        <span class="seg-title">Selective Repeat</span>
+                        <span class="seg-sub">Per-pkt Timers</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Strategy Mode Selector -->
+            <div class="control-group">
+                <label class="control-label">Transmission Strategy</label>
+                <div class="toggle-switch-wrapper">
+                    <button class="mode-toggle-btn" data-mode="p3" id="btnModeP3">
+                        <span class="mode-icon">🛡️</span>
+                        <span class="mode-name">Static P3 Baseline</span>
+                        <span class="mode-badge">Fixed W</span>
+                    </button>
+                    <button class="mode-toggle-btn active" data-mode="dart" id="btnModeDart">
+                        <span class="mode-icon">⚡</span>
+                        <span class="mode-name">DART Adaptive</span>
+                        <span class="mode-badge pulse">Dynamic FSM</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Network Impairment Emulator Controls -->
+            <div class="control-group impairment-rack">
+                <div class="rack-title-row">
+                    <label class="control-label">Network Channel Impairments</label>
+                    <span class="seed-badge" id="seedDisplay">Seed: 42</span>
+                </div>
+
+                <!-- Packet Loss -->
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-name">Packet Loss Rate</span>
+                        <span class="slider-val" id="lossVal">10.0%</span>
+                    </div>
+                    <input type="range" class="custom-range" id="lossSlider" min="0" max="40" step="1" value="10">
+                </div>
+
+                <!-- One-Way Latency -->
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-name">Propagation Delay</span>
+                        <span class="slider-val" id="delayVal">15 ms</span>
+                    </div>
+                    <input type="range" class="custom-range" id="delaySlider" min="0" max="200" step="5" value="15">
+                </div>
+
+                <!-- Jitter -->
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-name">Delay Jitter (±)</span>
+                        <span class="slider-val" id="jitterVal">5 ms</span>
+                    </div>
+                    <input type="range" class="custom-range" id="jitterSlider" min="0" max="50" step="1" value="5">
+                </div>
+
+                <!-- Reordering Rate -->
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-name">Packet Reordering</span>
+                        <span class="slider-val" id="reorderVal">8.0%</span>
+                    </div>
+                    <input type="range" class="custom-range" id="reorderSlider" min="0" max="30" step="1" value="8">
+                </div>
+
+                <!-- Corruption Rate -->
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-name">Bit Corruption Rate</span>
+                        <span class="slider-val" id="corruptVal">0.0%</span>
+                    </div>
+                    <input type="range" class="custom-range" id="corruptSlider" min="0" max="15" step="1" value="0">
+                </div>
+
+                <!-- Duplication Rate -->
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-name">Packet Duplication</span>
+                        <span class="slider-val" id="dupVal">0.0%</span>
+                    </div>
+                    <input type="range" class="custom-range" id="dupSlider" min="0" max="15" step="1" value="0">
+                </div>
+            </div>
+
+            <!-- Transfer Payload Preset -->
+            <div class="control-group">
+                <label class="control-label">Transfer Payload Size</label>
+                <div class="preset-pill-row">
+                    <button class="preset-btn" data-kb="15">15 KB</button>
+                    <button class="preset-btn active" data-kb="50">50 KB</button>
+                    <button class="preset-btn" data-kb="150">150 KB</button>
+                    <button class="preset-btn" data-kb="500">500 KB</button>
+                </div>
+            </div>
+
+            <!-- Launch Button -->
+            <button class="launch-btn" id="launchBtn">
+                <span class="btn-glow"></span>
+                <span class="btn-text">
+                    <span class="icon">🚀</span> Launch Reliable UDP Transfer
+                </span>
+            </button>
+        </section>
+
+        <!-- Column 2: Live Protocol & Pipeline Visualizer -->
+        <section class="panel visualizer-panel" id="visualizerPanel">
+            <div class="panel-header">
+                <div class="panel-icon">📡</div>
+                <div>
+                    <h2 class="panel-title">Real-Time Pipeline Visualizer</h2>
+                    <p class="panel-desc">Visual packet flow, sliding window, and DART state telemetry</p>
+                </div>
+                <div class="fsm-badge state-startup" id="fsmBadge">
+                    <span class="fsm-dot"></span>
+                    <span id="fsmStateName">IDLE</span>
+                </div>
+            </div>
+
+            <!-- Live Progress Bar -->
+            <div class="progress-section">
+                <div class="progress-info-row">
+                    <span class="progress-label">Transmission Progress</span>
+                    <span class="progress-pct" id="progressPct">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-glow"></div>
+                </div>
+                <div class="progress-meta-row">
+                    <span id="transferredBytesLabel">0 / 50 KB</span>
+                    <span id="rateLabel">0.0 KB/s</span>
+                </div>
+            </div>
+
+            <!-- Sliding Window Visualizer -->
+            <div class="window-visualizer-card">
+                <div class="card-head">
+                    <span class="card-title">Sliding Window Sequence Space [Base, Base + W - 1]</span>
+                    <span class="window-dim" id="windowDimBadge">Window: W = 4</span>
+                </div>
+                <div class="window-tape-container" id="windowTape">
+                    <!-- Dynamic packet slots populated by JS -->
+                </div>
+            </div>
+
+            <!-- Real-Time Packet Flight Animation Stage -->
+            <div class="packet-stage">
+                <div class="node-endpoint sender-node">
+                    <div class="node-avatar">TX</div>
+                    <span class="node-title">Sender</span>
+                    <span class="node-addr" id="senderAddr">127.0.0.1:Tx</span>
+                </div>
+
+                <div class="channel-wire">
+                    <div class="wire-channel-label">Channel Emulator (Lossy / Jitter)</div>
+                    <div class="packet-rail" id="packetRail">
+                        <!-- Packets animate here dynamically -->
+                    </div>
+                </div>
+
+                <div class="node-endpoint receiver-node">
+                    <div class="node-avatar">RX</div>
+                    <span class="node-title">Receiver</span>
+                    <span class="node-addr" id="receiverAddr">127.0.0.1:Rx</span>
+                </div>
+            </div>
+
+            <!-- Event Log Feed -->
+            <div class="events-feed-card">
+                <div class="feed-header">
+                    <span class="feed-title">Protocol Event Trace</span>
+                    <span class="feed-count" id="eventCountBadge">0 events</span>
+                </div>
+                <div class="feed-scroll" id="eventsFeed">
+                    <div class="feed-entry system">Ready. Select parameters and click Launch Reliable UDP Transfer.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Column 3: Live Telemetry & Cryptographic Verification -->
+        <section class="panel telemetry-panel" id="telemetryPanel">
+            <div class="panel-header">
+                <div class="panel-icon">📊</div>
+                <div>
+                    <h2 class="panel-title">Telemetry & Verification</h2>
+                    <p class="panel-desc">Real-time performance and cryptographic hash check</p>
+                </div>
+            </div>
+
+            <!-- Metrics Gauge Cards -->
+            <div class="metrics-metric-grid">
+                <!-- Goodput -->
+                <div class="metric-card">
+                    <span class="metric-name">Effective Goodput</span>
+                    <div class="metric-value-row">
+                        <span class="metric-number" id="metricGoodput">0.0</span>
+                        <span class="metric-unit">KB/s</span>
+                    </div>
+                    <div class="metric-foot" id="metricGoodputMbps">0.000 Mbps</div>
+                </div>
+
+                <!-- Average RTT -->
+                <div class="metric-card">
+                    <span class="metric-name">Smoothed RTT (SRTT)</span>
+                    <div class="metric-value-row">
+                        <span class="metric-number" id="metricRtt">0.0</span>
+                        <span class="metric-unit">ms</span>
+                    </div>
+                    <div class="metric-foot" id="metricRto">Dynamic RTO: 300 ms</div>
+                </div>
+
+                <!-- Retransmission Overhead -->
+                <div class="metric-card">
+                    <span class="metric-name">Retransmission Overhead</span>
+                    <div class="metric-value-row">
+                        <span class="metric-number" id="metricOverhead">0.0</span>
+                        <span class="metric-unit">%</span>
+                    </div>
+                    <div class="metric-foot" id="metricRetransCount">0 retransmissions</div>
+                </div>
+
+                <!-- Timeouts Count -->
+                <div class="metric-card">
+                    <span class="metric-name">Timer Timeouts</span>
+                    <div class="metric-value-row">
+                        <span class="metric-number" id="metricTimeouts">0</span>
+                        <span class="metric-unit">events</span>
+                    </div>
+                    <div class="metric-foot">Jacobson/Karels Backoff</div>
+                </div>
+            </div>
+
+            <!-- Cryptographic File Integrity Verification Card -->
+            <div class="integrity-card" id="integrityCard">
+                <div class="integrity-head">
+                    <div class="shield-icon" id="integrityShield">🛡️</div>
+                    <div>
+                        <div class="integrity-status" id="integrityStatus">Awaiting Transfer</div>
+                        <div class="integrity-sub">Cryptographic SHA-256 + RFC 1071 Checksum</div>
+                    </div>
+                </div>
+
+                <div class="hash-box">
+                    <span class="hash-label">Source File SHA-256:</span>
+                    <span class="hash-value" id="srcShaLabel">--</span>
+                </div>
+                <div class="hash-box">
+                    <span class="hash-label">Received File SHA-256:</span>
+                    <span class="hash-value" id="dstShaLabel">--</span>
+                </div>
+
+                <div class="integrity-badge unverified" id="integrityBadge">
+                    <span>⚪ Integrity Not Verified</span>
+                </div>
+            </div>
+
+            <!-- Experiment Plots Quick Launcher -->
+            <div class="plots-launcher-card">
+                <div class="launcher-header">
+                    <span class="launcher-title">Required P3 Experiments & Graphs</span>
+                </div>
+                <p class="launcher-desc">View publication-ready comparative plots for your evaluation report.</p>
+                <div class="plot-thumbnails-row">
+                    <button class="thumb-btn" data-plot="exp1_goodput_vs_loss.png" title="Goodput vs Loss">Plot 1: Loss</button>
+                    <button class="thumb-btn" data-plot="exp2_goodput_vs_window.png" title="Goodput vs Window">Plot 2: Window</button>
+                    <button class="thumb-btn" data-plot="exp3_retransmissions_vs_reorder.png" title="Retransmissions vs Reorder">Plot 3: Reorder</button>
+                    <button class="thumb-btn" data-plot="exp4_rto_sensitivity.png" title="RTO Sensitivity">Plot 4: RTO</button>
+                    <button class="thumb-btn highlight" data-plot="exp5_dart_vs_static_claim.png" title="DART Extension Claim">Plot 5: Claim</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Experiment Plots Inspection -->
+    <div class="modal-overlay" id="plotModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalPlotTitle">P3 Experiment Plot</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalPlotImg" src="" alt="Experiment Plot" class="modal-img">
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/app.js"></script>
+</body>
+</html>
